@@ -2,37 +2,60 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
-
-	"github.com/gorilla/mux"
+	"strings"
 )
 
-/**
-Please note Start functions is a placeholder for you to start your own solution.
-Feel free to drop gorilla.mux if you want and use any other solution available.
+// | GET    | `/name/{PARAM}`                       | body: `Hello, PARAM!`         |
+func nameHandler(w http.ResponseWriter, r *http.Request) {
+	parts := strings.Split(r.RequestURI, "/name/")
+	fmt.Fprintf(w, "Hello, %s!", parts[1])
+}
 
-main function reads host/port from env just for an example, flavor it following your taste
-*/
+// | GET    | `/bad`                                | Status: `500`                 |
+func badHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusInternalServerError)
+}
 
-// Start /** Starts the web server listener on given host and port.
-func Start(host string, port int) {
-	router := mux.NewRouter()
-
-	log.Println(fmt.Printf("Starting API server on %s:%d\n", host, port))
-	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), router); err != nil {
-		log.Fatal(err)
+// | POST   | `/data` + Body `PARAM`                | body: `I got message:\nPARAM` |
+func dataHandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "got error:%s", err)
+	} else {
+		fmt.Fprintf(w, "I got message:\n%s", string(body))
 	}
 }
 
-//main /** starts program, gets HOST:PORT param and calls Start func.
+// | GET    | `/header` + Headers{"a":"2", "b":"3"} | Header `"a+b": "5"`           |
+func headerHandler(w http.ResponseWriter, r *http.Request) {
+	a, _ := strconv.Atoi(r.Header.Get("a"))
+	b, _ := strconv.Atoi(r.Header.Get("b"))
+
+	w.Header().Set("a+b", strconv.Itoa(a+b))
+}
+
+func okHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
 func main() {
-	host := os.Getenv("HOST")
-	port, err := strconv.Atoi(os.Getenv("PORT"))
-	if err != nil {
-		port = 8081
+	http.HandleFunc("/name/", nameHandler)
+	http.HandleFunc("/bad", badHandler)
+	http.HandleFunc("/data", dataHandler)
+	http.HandleFunc("/header", headerHandler)
+	http.HandleFunc("/", okHandler)
+
+	Start("", 8080)
+}
+
+func Start(host string, port int) {
+	log.Println(fmt.Printf("Starting API server on %s:%d\n", host, port))
+	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil); err != nil {
+		log.Fatal(err)
 	}
-	Start(host, port)
 }
