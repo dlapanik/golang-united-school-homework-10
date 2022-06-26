@@ -36,7 +36,7 @@ func headerHandler(w http.ResponseWriter, r *http.Request) {
 	a, _ := strconv.Atoi(r.Header.Get("a"))
 	b, _ := strconv.Atoi(r.Header.Get("b"))
 
-	w.Header().Set("a+b", strconv.Itoa(a+b))
+	w.Header()["a+b"] = []string{strconv.Itoa(a + b)}
 }
 
 func okHandler(w http.ResponseWriter, r *http.Request) {
