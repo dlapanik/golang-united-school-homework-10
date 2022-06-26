@@ -44,16 +44,16 @@ func okHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	Start("", 8080)
+}
+
+func Start(host string, port int) {
 	http.HandleFunc("/name/", nameHandler)
 	http.HandleFunc("/bad", badHandler)
 	http.HandleFunc("/data", dataHandler)
 	http.HandleFunc("/header", headerHandler)
 	http.HandleFunc("/", okHandler)
 
-	Start("", 8080)
-}
-
-func Start(host string, port int) {
 	log.Println(fmt.Printf("Starting API server on %s:%d\n", host, port))
 	if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), nil); err != nil {
 		log.Fatal(err)
