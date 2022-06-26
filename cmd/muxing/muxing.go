@@ -36,7 +36,10 @@ func headerHandler(w http.ResponseWriter, r *http.Request) {
 	a, _ := strconv.Atoi(r.Header.Get("a"))
 	b, _ := strconv.Atoi(r.Header.Get("b"))
 
-	w.Header()["a+b"] = []string{strconv.Itoa(a + b)}
+	w.Header().Set("a+b", strconv.Itoa(a+b))
+	w.WriteHeader(http.StatusOK)
+
+	// w.Header()["a+b"] = []string{strconv.Itoa(a + b)}
 }
 
 func okHandler(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +54,7 @@ func Start(host string, port int) {
 	http.HandleFunc("/name/", nameHandler)
 	http.HandleFunc("/bad", badHandler)
 	http.HandleFunc("/data", dataHandler)
-	http.HandleFunc("/header", headerHandler)
+	http.HandleFunc("/headers", headerHandler)
 	http.HandleFunc("/", okHandler)
 
 	log.Println(fmt.Printf("Starting API server on %s:%d\n", host, port))
